@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -429,7 +431,6 @@ public class MainActivity extends AppCompatActivity {
 //                        .subscribe(i -> Log.i(TAG, "recieved: " + i),e->Log.i(TAG,"received error: "+e));
 
 
-
 //        Observable.just(5,2,4,0,3,2,8)
 //                .map(i->10/i)
 //                .doOnError(e->Log.i(TAG,"Division failed"))
@@ -447,8 +448,113 @@ public class MainActivity extends AppCompatActivity {
 //                .doOnSuccess(i -> Log.i(TAG,"emitting: "+i))
 //                .subscribe(i -> Log.i(TAG, "recieved: " + i), e -> Log.i(TAG, "received error: " + e));
 
-        //merging
-        
+
+        //-------------------merging-----------------
+
+//        Observable<String> source1 = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//        Observable<String> source2 = Observable.just("Zeta", "Eta", "Theta");
+//
+////        Observable.merge(source1,source2)
+//        source1.mergeWith(source2)
+//                        .subscribe(i -> Log.i(TAG, "recieved: " + i), e -> Log.i(TAG, "received error: " + e));
+
+
+        //emit every second
+//        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+//                .map(l -> l + 1)
+//                .map(l -> "source1: " + l + " seconds");
+//
+//
+//        Observable<String> source2 = Observable.interval(300, TimeUnit.MILLISECONDS)
+//                .map(l -> (l+1)*300)
+//                .map(l -> "source1: " + l + " millseconds");
+//
+//
+//        Disposable subscribe = Observable.merge(source1, source2)
+//                .subscribe(i -> Log.i(TAG, i));
+//
+//
+//        sleep(10000);
+//
+//        subscribe.dispose();
+
+//        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//
+//        source.flatMap(s->Observable.fromArray(s.split("")))
+//                .subscribe(i -> Log.i(TAG, i));
+
+
+//        Observable<String> source = Observable.just("521934/2342/FOXTROT", "21962/12112/78886/TANGO", "2832242/452/WHISKEY/2348562");
+//
+//        source.flatMap(s->Observable.fromArray(s.split("/")))
+//                .filter(s->s.matches("[0-9]+"))
+//                .map(Integer::parseInt)
+//                .subscribe(i -> Log.i(TAG, ""+i));
+
+
+//        Observable<Integer> secondIntervals = Observable.just(2, 0, 3, 10, 7);
+//
+//
+//        secondIntervals.flatMap(i -> {
+//
+//            if (i == 0) {
+//                return Observable.empty();
+//            } else {
+//
+//                return Observable.interval(i, TimeUnit.SECONDS)
+//                        .map(l -> i + "s interval: " + ((l + 1) * i) + "seconds elasped");
+//            }
+//
+//        }).subscribe(
+//                i -> Log.i(TAG, "" + i)
+//        );
+
+//        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//
+//        source.flatMap(s->Observable.fromArray(s.split("")),(s,r)->s+ "-" +r)
+//                .subscribe(i -> Log.i(TAG, ""+i));
+
+
+//                Observable<String> source1 = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//                Observable<String> source2 = Observable.just("Zeta", "Eta", "Theta");
+//
+//
+//                Observable.concat(source1,source2)
+//                        .subscribe(i -> Log.i(TAG, ""+i));
+
+
+
+        // emit every second, but only take 2 emissions
+//        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+//                .take(2)
+//                .map(l -> l + 1)
+//                .map(l -> "source1: " + l + " seconds");
+//
+//
+//        Observable<String> source2 = Observable.interval(300, TimeUnit.MILLISECONDS)
+//                .map(l -> (l + 1) * 30)
+//                .map(l -> "source2: " + l + " milliseconds");
+//
+//
+//        Observable.concat(source1 , source2)
+//                .subscribe(i -> Log.i(TAG, ""+i));
+
+
+
+        // emit every second, but only take 2 emissions
+        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+                .take(2)
+                .map(l -> l + 1)
+                .map(l -> "source1: " + l + " seconds");
+
+
+        Observable<String> source2 = Observable.interval(1200, TimeUnit.MILLISECONDS)
+                .map(l -> (l + 1) * 1200)
+                .map(l -> "source2: " + l + " milliseconds");
+
+
+        Observable.amb(Arrays.asList(source1, source2))
+                .subscribe(i -> Log.i(TAG, ""+i));
 
     }
 
