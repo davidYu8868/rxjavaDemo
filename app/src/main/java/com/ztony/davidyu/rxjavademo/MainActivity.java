@@ -1,17 +1,19 @@
 package com.ztony.davidyu.rxjavademo;
 
+import android.nfc.Tag;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +26,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.observable.ObservableLastMaybe;
 import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.observables.GroupedObservable;
 import io.reactivex.observers.ResourceObserver;
 
 public class MainActivity extends AppCompatActivity {
@@ -542,20 +545,134 @@ public class MainActivity extends AppCompatActivity {
 
 
         // emit every second, but only take 2 emissions
-        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
-                .take(2)
-                .map(l -> l + 1)
-                .map(l -> "source1: " + l + " seconds");
+//        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
+//                .take(2)
+//                .map(l -> l + 1)
+//                .map(l -> "source1: " + l + " seconds");
+//
+//
+//        Observable<String> source2 = Observable.interval(1200, TimeUnit.MILLISECONDS)
+//                .map(l -> (l + 1) * 1200)
+//                .map(l -> "source2: " + l + " milliseconds");
+//
+//
+//        Observable.amb(Arrays.asList(source1, source2))
+//                .subscribe(i -> Log.i(TAG, ""+i));
+
+//
+//                Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//
+//
+//        Observable<Integer> source2 = Observable.range(1, 6);
+//
+//        Observable.zip(source,source2,(s,i)->s+"-"+i).subscribe(i -> Log.i(TAG, ""+i));
+
+//
+//        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//
+//        Observable<Long> second = Observable.interval(1, TimeUnit.SECONDS);
+//
+//        Observable.zip(source,second,(s,l)->s)
+//                .subscribe(s->Log.i(TAG,"received "+ s));
 
 
-        Observable<String> source2 = Observable.interval(1200, TimeUnit.MILLISECONDS)
-                .map(l -> (l + 1) * 1200)
-                .map(l -> "source2: " + l + " milliseconds");
+//        Observable<Long> source1 = Observable.interval(300, TimeUnit.MILLISECONDS);
+//        Observable<Long> source2= Observable.interval(1, TimeUnit.SECONDS);
+//
+//        Observable.combineLatest(source1,source2,(l1,l2)->"SOURCE 1: "+ l1 + " source 2: "+ l2)
+//                .subscribe(s->Log.i(TAG,s));
 
 
-        Observable.amb(Arrays.asList(source1, source2))
-                .subscribe(i -> Log.i(TAG, ""+i));
+//        Observable<Long> source1 = Observable.interval(300, TimeUnit.MILLISECONDS);
+//        Observable<Long> source2= Observable.interval(1, TimeUnit.SECONDS);
+//
+//        source2.withLatestFrom(source1,(l1,l2)->"SOURCE 1: "+ l1 + " source 2: "+ l2)
+//                .subscribe(s->Log.i(TAG,s));
 
+
+        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+
+        Observable<GroupedObservable<Integer, String>> byLengths = source.groupBy(s -> s.length());
+
+
+//        byLengths.flatMapSingle(grp->grp.toList())
+//
+//                .subscribe(s->Log.i(TAG,"item is "+ s));
+
+//        byLengths.flatMapSingle(grp->
+//        grp.reduce("",(x,y)->x.equals("")?y : x+ ","+y)
+//                .map(s->grp.getKey() + ": "+s )
+//
+//
+//        ).subscribe(s->Log.i(TAG,"item is "+ s));
+
+
+
+//        List<String> stringArrayList = new ArrayList<String>();
+//
+//        List<Integer> integerArrayList = new ArrayList<Integer>();
+//
+//        Class classStringArrayList = stringArrayList.getClass();
+//        Class classIntegerArrayList = integerArrayList.getClass();
+//
+//
+//
+//        if(classStringArrayList.equals(classIntegerArrayList)){
+//            Log.d("泛型测试","类型相同");
+//        }
+//
+//
+//        Generic<Integer> integerGeneric = new Generic<>(1234);
+//
+//      //传入的实参类型需与泛型的类型参数类型相同，即为String.
+//        Generic<String> genericString = new Generic<String>("key_vlaue");
+//
+//
+//        Log.d("泛型测试","key is " + integerGeneric.getKey());
+//        Log.d("泛型测试","key is " + genericString.getKey());
+
+
+//        Generic generic = new Generic("111111");
+//        Generic generic1 = new Generic(4444);
+//        Generic generic2 = new Generic(55.55);
+//        Generic generic3 = new Generic(false);
+//
+//        Log.d("泛型测试","key is " + generic.getKey());
+//        Log.d("泛型测试","key is " + generic1.getKey());
+//        Log.d("泛型测试","key is " + generic2.getKey());
+//        Log.d("泛型测试","key is " + generic3.getKey());
+//
+//        Generic<Integer> gInteger = new Generic<Integer>(123);
+//        Generic<Number> gNumber = new Generic<Number>(456);
+//
+//        showKeyValue(gNumber);
+//
+//        showKeyValue(gInteger);
+
+//        GenericFruit.Apple apple = new GenericFruit.Apple();
+//        GenericFruit.Person person = new GenericFruit.Person();
+//
+
+        //printMsg("111",333,"32423.4",44.44);
+
+
+        Generic<String> generic1 = new Generic<String>("11111");
+        Generic<Integer> generic2 = new Generic<Integer>(2222);
+        Generic<Float> generic3 = new Generic<Float>(2.4f);
+        Generic<Double> generic4 = new Generic<Double>(2.56);
+
+
+        //这一行代码编译器会提示错误，因为String类型并不是Number类型的子类
+      showKeyValue1(generic1);
+
+        showKeyValue1(generic2);
+        showKeyValue1(generic3);
+        showKeyValue1(generic4);
+
+    }
+
+    private void showKeyValue(Generic<?> gNumber) {
+        Log.d("泛型测试","key value is " + gNumber.getKey());
     }
 
     private void sleep(int i) {
@@ -573,4 +690,32 @@ public class MainActivity extends AppCompatActivity {
     private void runProcess() {
 
     }
+
+
+    public <T>T genericMethod(Class<T> tClass) throws  InstantiationException,IllegalAccessException{
+
+
+        T instance = tClass.newInstance();
+        return instance;
+    }
+
+
+
+    public <T> void printMsg(T...args)
+    {
+
+        for (T t : args) {
+
+            Log.d("泛型测试","t is " + t);
+        }
+
+    }
+
+
+    public void showKeyValue1(Generic<? extends Number> obj){
+        Log.d("泛型测试","key value is " + obj.getKey());
+    }
+
+
+
 }
