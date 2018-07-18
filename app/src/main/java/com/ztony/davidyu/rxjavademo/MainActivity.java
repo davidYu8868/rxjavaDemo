@@ -590,15 +590,15 @@ public class MainActivity extends AppCompatActivity {
 //                .subscribe(s->Log.i(TAG,s));
 
 
-        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
-
-        Observable<GroupedObservable<Integer, String>> byLengths = source.groupBy(s -> s.length());
-
-
+//        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon");
+//
+//        Observable<GroupedObservable<Integer, String>> byLengths = source.groupBy(s -> s.length());
+//
+//
 //        byLengths.flatMapSingle(grp->grp.toList())
 //
 //                .subscribe(s->Log.i(TAG,"item is "+ s));
-
+//
 //        byLengths.flatMapSingle(grp->
 //        grp.reduce("",(x,y)->x.equals("")?y : x+ ","+y)
 //                .map(s->grp.getKey() + ": "+s )
@@ -657,17 +657,32 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Generic<String> generic1 = new Generic<String>("11111");
-        Generic<Integer> generic2 = new Generic<Integer>(2222);
-        Generic<Float> generic3 = new Generic<Float>(2.4f);
-        Generic<Double> generic4 = new Generic<Double>(2.56);
+//        Generic<Integer> generic2 = new Generic<Integer>(2222);
+//        Generic<Float> generic3 = new Generic<Float>(2.4f);
+//        Generic<Double> generic4 = new Generic<Double>(2.56);
+//
+//
+//        //这一行代码编译器会提示错误，因为String类型并不是Number类型的子类
+//      // showKeyValue1(generic1);
+//
+//        showKeyValue1(generic2);
+//        showKeyValue1(generic3);
+//        showKeyValue1(generic4);
 
 
-        //这一行代码编译器会提示错误，因为String类型并不是Number类型的子类
-      // showKeyValue1(generic1);
+        //page 279
 
-        showKeyValue1(generic2);
-        showKeyValue1(generic3);
-        showKeyValue1(generic4);
+//        Observable<Integer> range = Observable.range(1, 3);
+//
+//        range.subscribe(i->Log.i(TAG,"observer one : "+ i));
+//        range.subscribe(i->Log.i(TAG,"observer two : "+ i));
+
+        ConnectableObservable<Integer> range = Observable.range(1, 3).publish();
+
+        range.subscribe(i->Log.i(TAG,"observer one : "+ i));
+       range.subscribe(i->Log.i(TAG,"observer two : "+ i));
+
+        range.connect();
 
     }
 
