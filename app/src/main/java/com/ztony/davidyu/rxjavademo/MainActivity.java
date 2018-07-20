@@ -1,5 +1,6 @@
 package com.ztony.davidyu.rxjavademo;
 
+import android.annotation.SuppressLint;
 import android.nfc.Tag;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Completable;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private static int count = 5;
 
 
+    @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -677,13 +680,150 @@ public class MainActivity extends AppCompatActivity {
 //        range.subscribe(i->Log.i(TAG,"observer one : "+ i));
 //        range.subscribe(i->Log.i(TAG,"observer two : "+ i));
 
-        ConnectableObservable<Integer> range = Observable.range(1, 3).publish();
+//        ConnectableObservable<Integer> range = Observable.range(1, 3).publish();
+//
+//        range.subscribe(i->Log.i(TAG,"observer one : "+ i));
+//       range.subscribe(i->Log.i(TAG,"observer two : "+ i));
 
-        range.subscribe(i->Log.i(TAG,"observer one : "+ i));
-       range.subscribe(i->Log.i(TAG,"observer two : "+ i));
+//        range.connect();
 
-        range.connect();
 
+//        ConnectableObservable<Integer> threeRandoms = Observable.range(1, 3)
+//                .map(i -> randomInt()).publish();
+//
+//        threeRandoms.subscribe(i->Log.i(TAG,"observer 1: "+ i));
+//        threeRandoms.subscribe(i->Log.i(TAG,"observer 2: "+ i));
+//
+//        threeRandoms.connect();
+
+
+//        ConnectableObservable<Integer> threeInts = Observable.range(1, 3).publish();
+//        Observable<Integer> threeRandoms = threeInts.map(i -> randomInt());
+//
+//        threeRandoms.subscribe(i->Log.i(TAG,"observer 1: "+ i));
+//        threeRandoms.subscribe(i->Log.i(TAG,"observer 2: "+ i));
+//
+//        threeInts.connect();
+
+
+
+//        ConnectableObservable<Integer> threeRandoms = Observable.range(1, 3)
+//                .map(i -> randomInt()).publish();
+//
+//
+//        threeRandoms.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//
+//
+//        threeRandoms.reduce(0, (total,next)->total + next)
+//                .subscribe(i->Log.i(TAG,"Observer 2 : "+ i));
+//
+//        threeRandoms.connect();
+
+
+//        Observable<Integer> threeRandoms = Observable.range(1, 3)
+//                .map(i -> randomInt()).publish().autoConnect(2);
+//
+//
+//
+//        threeRandoms.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//        threeRandoms.reduce(0, (total,next)->total + next)
+//                .subscribe(i->Log.i(TAG,"Observer 2 : "+ i));
+//
+//
+//        threeRandoms.reduce(0, (total,next)->total + next)
+//                .subscribe(i->Log.i(TAG,"Observer 3 : "+ i));
+
+//
+//        Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS)
+//                .publish()
+//                .autoConnect();
+//
+//        //observer 1
+//        seconds.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//
+//        sleep(3000);
+//
+//        //observer 2
+//        seconds.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
+
+
+//
+//        Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS)
+//                .publish()
+//                .refCount();
+//
+//        //observer 1
+//        seconds.take(5).subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//        sleep(3000);
+//
+//        seconds.take(2).subscribe(i->Log.i(TAG,"Observer 2: "+ i));
+//
+//        sleep(3000);
+//
+//
+//        seconds.subscribe(i->Log.i(TAG,"Observer 3: "+ i));
+
+
+//        Observable<Long> seconds = Observable.interval(1, TimeUnit.SECONDS)
+//                .replay(2).autoConnect();
+//
+//        //observer 1
+//        seconds.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//        sleep(5000);
+//
+//        //observer 2
+//        seconds.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
+
+
+//        Observable<String> source = Observable.just("ALpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .replay(1)
+//                .refCount()
+//                ;
+//
+//
+//        //observer 1
+//        source.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//
+//        //observer 2
+//        source.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
+
+
+
+//        Observable<Long> seconds = Observable.interval(300, TimeUnit.MILLISECONDS)
+//                .map(l->(l+1)*300) // map to elapsed  milliseconds
+//                .replay(1,TimeUnit.SECONDS)
+//                .autoConnect();
+//
+//
+//        //observer 1
+//        seconds.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+//
+//
+//        sleep(2000);
+//
+//        //observer 2
+//        seconds.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
+
+
+        Observable<Integer> cachedRollingTotals = Observable.just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+                .scan(0, (total, next) -> total + next)
+                .cacheWithInitialCapacity(7);
+
+        cachedRollingTotals.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static int randomInt()
+    {
+        return ThreadLocalRandom.current().nextInt(100000);
     }
 
     private void showKeyValue(Generic<?> gNumber) {
