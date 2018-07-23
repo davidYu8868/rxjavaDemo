@@ -30,6 +30,7 @@ import io.reactivex.internal.operators.observable.ObservableLastMaybe;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observables.GroupedObservable;
 import io.reactivex.observers.ResourceObserver;
+import io.reactivex.subjects.PublishSubject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -811,11 +812,37 @@ public class MainActivity extends AppCompatActivity {
 //        seconds.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
 
 
-        Observable<Integer> cachedRollingTotals = Observable.just(6, 2, 5, 7, 1, 4, 9, 8, 3)
-                .scan(0, (total, next) -> total + next)
-                .cacheWithInitialCapacity(7);
+//        Observable<Integer> cachedRollingTotals = Observable.just(6, 2, 5, 7, 1, 4, 9, 8, 3)
+//                .scan(0, (total, next) -> total + next)
+//                .cacheWithInitialCapacity(7);
+//
+//        cachedRollingTotals.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
 
-        cachedRollingTotals.subscribe(i->Log.i(TAG,"Observer 1: "+ i));
+
+        // page 312
+
+//        PublishSubject<String> subject = PublishSubject.create();
+//
+//
+//        subject.map(String::length)
+//                .subscribe(i->Log.i(TAG,"this letter's length is "+ i));
+//
+//
+//        subject.onNext("Alpha");
+//        subject.onNext("Beta");
+//        subject.onNext("Gamma");
+//        subject.onComplete();
+
+
+        Observable<String> source
+                = Observable.interval(1, TimeUnit.SECONDS)
+                .map(l -> (l + 1) + " seconds");
+
+
+        Observable<String> source2
+                = Observable.interval(300, TimeUnit.MILLISECONDS)
+                .map(l -> ((l + 1)*300) + " milliseconds");
+
 
     }
 
