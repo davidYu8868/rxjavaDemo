@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Time;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,14 +18,19 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -30,7 +38,12 @@ import io.reactivex.internal.operators.observable.ObservableLastMaybe;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observables.GroupedObservable;
 import io.reactivex.observers.ResourceObserver;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.AsyncSubject;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.UnicastSubject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static int start = 1;
     private static int count = 5;
+
+
+    int numberOfThreads = 20 ;
+
 
 
     @SuppressLint("CheckResult")
@@ -530,7 +547,6 @@ public class MainActivity extends AppCompatActivity {
 //                        .subscribe(i -> Log.i(TAG, ""+i));
 
 
-
         // emit every second, but only take 2 emissions
 //        Observable<String> source1 = Observable.interval(1, TimeUnit.SECONDS)
 //                .take(2)
@@ -545,7 +561,6 @@ public class MainActivity extends AppCompatActivity {
 //
 //        Observable.concat(source1 , source2)
 //                .subscribe(i -> Log.i(TAG, ""+i));
-
 
 
         // emit every second, but only take 2 emissions
@@ -609,7 +624,6 @@ public class MainActivity extends AppCompatActivity {
 //
 //
 //        ).subscribe(s->Log.i(TAG,"item is "+ s));
-
 
 
 //        List<String> stringArrayList = new ArrayList<String>();
@@ -707,7 +721,6 @@ public class MainActivity extends AppCompatActivity {
 //        threeInts.connect();
 
 
-
 //        ConnectableObservable<Integer> threeRandoms = Observable.range(1, 3)
 //                .map(i -> randomInt()).publish();
 //
@@ -795,7 +808,6 @@ public class MainActivity extends AppCompatActivity {
 //        source.subscribe(i->Log.i(TAG,"Observer 2: "+ i));
 
 
-
 //        Observable<Long> seconds = Observable.interval(300, TimeUnit.MILLISECONDS)
 //                .map(l->(l+1)*300) // map to elapsed  milliseconds
 //                .replay(1,TimeUnit.SECONDS)
@@ -834,30 +846,347 @@ public class MainActivity extends AppCompatActivity {
 //        subject.onComplete();
 
 
-        Observable<String> source
-                = Observable.interval(1, TimeUnit.SECONDS)
-                .map(l -> (l + 1) + " seconds");
+//        Observable<String> source
+//                = Observable.interval(1, TimeUnit.SECONDS)
+//                .map(l -> (l + 1) + " seconds");
+//
+//
+//        Observable<String> source2
+//                = Observable.interval(300, TimeUnit.MILLISECONDS)
+//                .map(l -> ((l + 1)*300) + " milliseconds");
+//
+//
+//        PublishSubject<String> subject = PublishSubject.create();
+//
+//        subject.subscribe(s->Log.i(TAG,"item is "+ s));
+//
+//        source.subscribe(subject);
+//
+//        source2.subscribe(subject);
 
 
-        Observable<String> source2
-                = Observable.interval(300, TimeUnit.MILLISECONDS)
-                .map(l -> ((l + 1)*300) + " milliseconds");
+//        PublishSubject<String> subject = PublishSubject.create();
+//
+//        subject.onNext("Alpha");
+//        subject.onNext("Beta");
+//        subject.onNext("Gamma");
+//        subject.onComplete();
+//
+//
+//        subject.map(String::length)
+//                .subscribe(s->Log.i(TAG,"item is "+ s));
 
+//        ReplaySubject<String> subject = ReplaySubject.create();
+//
+//
+//         subject.subscribe(s->Log.i(TAG,"item 1  is "+ s));
+//
+//
+//        subject.onNext("Alpha");
+//        subject.onNext("Beta");
+//        subject.onNext("Gamma");
+//
+//
+//
+//        subject.subscribe(s->Log.i(TAG,"item 2  is "+ s));
+
+
+//        AsyncSubject<String> subject = AsyncSubject.create();
+//
+//        subject.subscribe(s->Log.i(TAG,"item is "+ s),Throwable::printStackTrace,()->Log.i(TAG,"Observer1 done"));
+//
+//        subject.onNext("Alpha");
+//        subject.onNext("Beta");
+//        subject.onNext("Gamma");
+//        subject.onComplete();
+//
+//        subject.subscribe(s->Log.i(TAG,"item2 is "+ s),Throwable::printStackTrace,()->Log.i(TAG,"Observer2 done"));
+
+
+//        UnicastSubject<String> subject = UnicastSubject.create();
+//
+//        Observable.interval(300,TimeUnit.MILLISECONDS)
+//                        .map(l->((l+1)*300)+ " milliseconds")
+//                .subscribe(subject);
+//
+//
+//        sleep(2000);
+//
+//       // subject.subscribe(s->Log.i(TAG,"Observa1 : "+ s));
+//
+//        Observable<String> multicast = subject.publish().autoConnect();
+//
+//        //bring in first Observer
+//        multicast.subscribe(s->Log.i(TAG,"Observa1 :"+ s));
+//
+//
+//        sleep(2000);
+//
+//      //bring in second Observer
+//        multicast.subscribe(s->Log.i(TAG,"Observa2 :"+ s));
+
+
+        //340 concurrency
+
+//        Observable.interval(1, TimeUnit.SECONDS)
+//                .map(i -> i + " Mississippi")
+//                .subscribe(s -> Log.i(TAG, s));
+//
+//        sleep(5000);
+
+//
+//        Observable<String> source1 = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .subscribeOn(Schedulers.computation())
+//                .map(s -> intenseCalculation(s));
+//
+//
+//        Observable<Integer> source2 = Observable.range(1, 6)
+//                .subscribeOn(Schedulers.computation())
+//                .map(s -> intenseCalculation(s));
+//
+//
+//        Observable.zip(source1, source2,(s,i)->s+" _ "+ i )
+//                 .subscribe(s -> Log.i(TAG,s));
+
+
+//        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+//
+//
+//        Scheduler scheduler = Schedulers.from(executor);
+//
+//
+//        Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .subscribeOn(scheduler)
+//                .doFinally(executor::shutdown)
+//                .subscribe(s -> Log.i(TAG, s));
+
+
+//        Observable<Integer> lengths = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .subscribeOn(Schedulers.computation())
+//                .map(MainActivity::intenseCalculation)
+//                .map(String::length);
+//
+//
+//        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
+//
+//
+//        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
+
+
+
+//        Observable<Integer> lengths = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .subscribeOn(Schedulers.computation())
+//                .map(MainActivity::intenseCalculation)
+//                .map(String::length)
+//                .publish()
+//                .autoConnect(2);
+//
+//
+//        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
+//
+//
+//        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
+
+
+
+//        Observable.fromCallable(()->getResponse("https://api.github.com/users/thomasnield/starred"))
+//                .subscribeOn(Schedulers.io())
+//                .subscribe(System.out::println);
+
+
+        //happens on IO scheduler
+//        Observable.just("WHISKEY/27653/TANGO","6555/BRAVO","232352/5675675/FOXTROT")
+//                .subscribeOn(Schedulers.io())
+//                .flatMap(s-> Observable.fromArray(s.split("/")))
+//                .doOnNext(s ->Log.i(TAG,"split out "+s + " on thread "+ Thread.currentThread().getName()))
+//
+//        //happends on computation scheduler
+//                 .observeOn(Schedulers.computation())
+//                   .filter(s-> s.matches("[0-9]+"))
+//                   .map(Integer::valueOf)
+//                   .reduce((total,next)->total+next)
+//                    .doOnSuccess(i->Log.i(TAG,"calculated sum "+ i + " on thread "+ Thread.currentThread().getName()))
+////                   .subscribe(i->Log.i(TAG,"Received "+ i + " on thread "+ Thread.currentThread().getName()));
+//
+//        // switch back to IO Scheduler
+//        .observeOn(Schedulers.io())
+//                .map(i->i.toString())
+//                .doOnSuccess(i->Log.i(TAG,"write sum "+ i + " on thread "+ Thread.currentThread().getName()))
+//                .subscribe(s->Log.i(TAG,"sum is "+ s));
+
+
+        //380
+
+//        Observable.range(1,10)
+//                .map(i->intenseCalculation(i))
+//                .subscribe(i->Log.i(TAG,"Received "+ i + LocalTime.now()));
+
+
+//        Observable.range(1,10)
+//
+//                .flatMap(i->Observable.just(i).subscribeOn(Schedulers.computation())
+//                .map(i2->intenseCalculation(i2))
+//                )
+//                .subscribe(i->Log.i(TAG," Received "+ i + " "+LocalTime.now()+ " on thread"+ Thread.currentThread().getName()));
+
+
+//        int coreCount = Runtime.getRuntime().availableProcessors();
+//
+//        Log.i(TAG,"core is "+ coreCount);
+//
+//        AtomicInteger assigner =new AtomicInteger(0);
+//
+//
+//        Observable.range(1,10)
+//                .groupBy(i->assigner.incrementAndGet() % coreCount)
+//                .flatMap(grp ->grp.observeOn(Schedulers.io()).map(i2->intenseCalculation(i2))
+//                )
+//               .subscribe(i->Log.i(TAG," Received "+ i + " "+LocalTime.now()+ " on thread"+ Thread.currentThread().getName()));
+//
+
+
+//        Disposable d = Observable.interval(1, TimeUnit.SECONDS)
+//                .doOnDispose(() -> Log.i(TAG, "Disposing on thread " + Thread.currentThread().getName()))
+//                .unsubscribeOn(Schedulers.io())
+//                .subscribe(i -> Log.i(TAG, "Recevied " + i));
+//
+//        sleep(3000);
+//
+//        d.dispose();
+
+
+//          Observable.range(1,10)
+//                  .buffer(2,1)
+//                  .filter(c->c.size() ==2)
+//                  .subscribe(System.out::println);
+
+//        Observable<Long> cutOffs = Observable.interval(1, TimeUnit.SECONDS);
+//
+//
+//        Observable.interval(300,TimeUnit.MILLISECONDS)
+//                .map(i->(i+1)*300)
+//                .buffer(cutOffs)
+//                .subscribe(i->Log.i(TAG, ""+i));
+
+
+//        Observable.range(1,50)
+//                .window(2,3)
+//                .flatMapSingle(obs->obs.reduce("",(total,next)->  total +":"+ next))
+//                .subscribe(s->Log.i(TAG,s));
+
+//        Observable<Long> cutOffs = Observable.interval(1, TimeUnit.SECONDS);
+//
+//
+//        Observable.interval(300,TimeUnit.MILLISECONDS)
+//                .map(i->(i+1)*300)
+//                .window(cutOffs)
+//                .flatMapSingle(obs->obs.reduce("",(total,next)->  total +":"+ next))
+//                .subscribe(i->Log.i(TAG, ""+i));
+
+
+//        Observable<String> source1 = Observable.interval(100, TimeUnit.SECONDS)
+//                .map(i -> (i + 1) * 100)
+//                .map(i -> "SOURCE 1: " + i)
+//                .take(10);
+//
+//
+//        Observable<String> source2 = Observable.interval(300, TimeUnit.SECONDS)
+//                .map(i -> (i + 1) * 300)
+//                .map(i -> "SOURCE 2: " + i)
+//                .take(3);
+//
+//
+//        Observable<String> source3 = Observable.interval(2000, TimeUnit.SECONDS)
+//                .map(i -> (i + 1) * 2000)
+//                .map(i -> "SOURCE 3: " + i)
+//                .take(2);
+//
+//
+//        Observable.concat(source1,source2,source3)
+//                .subscribe(s->Log.i(TAG,s));
+//
+//
+//
+//        sleep(6000);
+
+//        Observable<String> source1 = Observable.interval(100, TimeUnit.MILLISECONDS) .map(i -> (i + 1) * 100) // map to elapsed time
+//                .map(i -> "SOURCE 1: " + i)
+//                .take(10);
+
+//        Observable<String> source1 = Observable.interval(100, TimeUnit.MILLISECONDS) .map(i -> (i + 1) * 100) // map to elapsed time
+//                .map(i -> "SOURCE 1: " + i)
+//                .take(10);
+//
+//
+//        Observable<String> source2 = Observable.interval(300, TimeUnit.MILLISECONDS) .map(i -> (i + 1) * 300) // map to elapsed time
+//                .map(i -> "SOURCE 2: " + i)
+//                .take(3);
+//
+//
+//        Observable<String> source3 = Observable.interval(2000, TimeUnit.MILLISECONDS) .map(i -> (i + 1) * 2000) // map to elapsed time
+//                .map(i -> "SOURCE 3: " + i)
+//                .take(2);
+//        Observable.concat(source1, source2, source3)
+//                .throttleWithTimeout(1,TimeUnit.SECONDS)
+//                .subscribe(s-> Log.i(TAG,s));
+//
+//        sleep(6000);
+
+
+//        Observable<String> items = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
+//                "Zeta", "Eta", "Theta", "Iota");
+////        .delay(randomSleepTime(), TimeUnit.MILLISECONDS);
+//        Observable<String> proccessStrings = items.concatMap(s -> Observable.just(s).delay(randomSleepTime(), TimeUnit.MILLISECONDS));
+//
+//        proccessStrings.subscribe(s->Log.i(TAG,s));
+
+
+
+        Observable<String> items = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
+                "Zeta", "Eta", "Theta", "Iota");
+
+//delay each String to emulate an intense calculation
+        Observable<String> processStrings = items.concatMap(s -> Observable.just(s).delay(randomSleepTime(), TimeUnit.MILLISECONDS));
+
+
+        // rund processString every 5 seconds, and kill each previous instace to start next
+
+        Observable.interval(5,TimeUnit.SECONDS)
+                .switchMap(i->processStrings.doOnDispose(()->Log.i(TAG,"Disposing! Starting next"))).subscribe(s->Log.i(TAG,s));
+
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private static int randomSleepTime() {
+        return ThreadLocalRandom.current().nextInt(2000);
+    }
+
+
+    private static String getResponse(String path)
+    {
+        try {
+           return new Scanner(new URL(path).openStream(),"UTF-8").useDelimiter("\\A").next();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return e.getMessage();
+
+        }
 
     }
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public static int randomInt()
-    {
+    public static int randomInt() {
         return ThreadLocalRandom.current().nextInt(100000);
     }
 
     private void showKeyValue(Generic<?> gNumber) {
-        Log.d("泛型测试","key value is " + gNumber.getKey());
+        Log.d("泛型测试", "key value is " + gNumber.getKey());
     }
 
-    private void sleep(int i) {
+    public static void sleep(int i) {
 
 
         try {
@@ -874,7 +1203,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public <T>T genericMethod(Class<T> tClass) throws  InstantiationException,IllegalAccessException{
+    public <T> T genericMethod(Class<T> tClass) throws InstantiationException, IllegalAccessException {
 
 
         T instance = tClass.newInstance();
@@ -882,22 +1211,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public <T> void printMsg(T...args)
-    {
+    public <T> void printMsg(T... args) {
 
         for (T t : args) {
 
-            Log.d("泛型测试","t is " + t);
+            Log.d("泛型测试", "t is " + t);
         }
 
     }
 
 
-    public void showKeyValue1(Generic<? extends Number> obj){
-        Log.d("泛型测试","key value is " + obj.getKey());
+    public void showKeyValue1(Generic<? extends Number> obj) {
+        Log.d("泛型测试", "key value is " + obj.getKey());
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static <T> T intenseCalculation(T value) {
+        sleep(ThreadLocalRandom.current().nextInt(3000));
+
+        return value;
+
+    }
 
 
 }
