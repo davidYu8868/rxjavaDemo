@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Time;
@@ -27,7 +30,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
@@ -1142,18 +1147,146 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        Observable<String> items = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
-                "Zeta", "Eta", "Theta", "Iota");
+//        Observable<String> items = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
+//                "Zeta", "Eta", "Theta", "Iota");
+//
+////delay each String to emulate an intense calculation
+//        Observable<String> processStrings = items.concatMap(s -> Observable.just(s).delay(randomSleepTime(), TimeUnit.MILLISECONDS));
+//
+//
+//        // rund processString every 5 seconds, and kill each previous instace to start next
+//
+//        Observable.interval(5,TimeUnit.SECONDS)
+//                .switchMap(i->processStrings.doOnDispose(()->Log.i(TAG,"Disposing! Starting next"))).subscribe(s->Log.i(TAG,s));
 
-//delay each String to emulate an intense calculation
-        Observable<String> processStrings = items.concatMap(s -> Observable.just(s).delay(randomSleepTime(), TimeUnit.MILLISECONDS));
+//       Observable.range(1,999_999_999)
+//               .map(MyItem::new)
+//               .subscribe(myItem -> {
+//                   sleep(500);
+//                   Log.i(TAG,"Received MyItem "+ myItem.id);
+//
+//               });
+
+//        Observable.range(1,999_999_999)
+//                .map(MyItem::new)
+//                .observeOn(Schedulers.io())
+//                .subscribe(myItem -> {
+//                    sleep(500);
+//                    Log.i(TAG,"Received MyItem "+ myItem.id);
+//
+//                });
 
 
-        // rund processString every 5 seconds, and kill each previous instace to start next
+//                Flowable.range(1,999_999_999)
+//                .map(MyItem::new)
+//                .observeOn(Schedulers.io())
+//                .subscribe(myItem -> {
+//                    sleep(500);
+//                    Log.i(TAG,"Received MyItem "+ myItem.id);
+//
+//                });
 
-        Observable.interval(5,TimeUnit.SECONDS)
-                .switchMap(i->processStrings.doOnDispose(()->Log.i(TAG,"Disposing! Starting next"))).subscribe(s->Log.i(TAG,s));
 
+//        Flowable.range(1,1000)
+//                .doOnNext(s -> Log.i(TAG,"Source pushed " + s)) .observeOn(Schedulers.io())
+//                .map(i -> intenseCalculation(i))
+//                .subscribe(s -> Log.i(TAG,"Subscriber received " + s),
+//                        Throwable::printStackTrace,
+//                        () -> Log.i(TAG,"done")
+//                );
+
+
+//                Flowable.range(1,1000)
+//                .doOnNext(s -> Log.i(TAG,"Source pushed " + s)) .observeOn(Schedulers.io())
+//                .map(i -> intenseCalculation(i))
+//                .subscribe(new Subscriber<Integer>() {
+//
+//                    Subscription subscription;
+//                    AtomicInteger count = new AtomicInteger(0);
+//
+//                    @Override
+//                    public void onSubscribe(Subscription subscription) {
+//
+//                        this.subscription =  subscription;
+//                        Log.i(TAG,"Requesting 40 times!");
+//                        subscription.request(Long.MAX_VALUE);
+//                    }
+//
+//                    @Override
+//                    public void onNext(Integer s) {
+//
+//                        sleep(50);
+//                        Log.i(TAG,"subscriber received "+ s);
+//                        if(count.incrementAndGet()%20 == 0  && count.get() >=40)
+//                        {
+//                            Log.i(TAG,"Requesting 20 times!");
+//
+//                            subscription.request(20);
+//                        }
+//
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable t) {
+//                        t.printStackTrace();
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                        Log.i(TAG,"done");
+//
+//                    }
+//                });
+
+
+//        Observable<Object> source = Observable.create(emitter -> {
+//
+//            for (int i = 0; i < 1000; i++) {
+//                if(emitter.isDisposed())
+//                {
+//                    return;
+//                }
+//
+//                emitter.onNext(i);
+//            }
+//
+//            emitter.onComplete();
+//
+//        });
+//
+//
+//        source.observeOn(Schedulers.io())
+//                .subscribe(s->Log.i(TAG,"item is "+ s));
+
+
+//        Flowable<Object> source = Flowable.create(emitter -> {
+//            for (int i = 0; i < 1000; i++) {
+//                if(emitter.isCancelled()) return;
+//
+//                emitter.onNext(i);
+//            }
+//
+//            emitter.onComplete();
+//
+//        }, BackpressureStrategy.BUFFER);
+//
+//
+//        source.observeOn(Schedulers.io())
+//                .subscribe(s->{
+//
+//                    sleep(50);
+//                    Log.i(TAG,"item is "+ s);
+//
+//
+//                        }
+//
+//
+//
+//                );
+
+       //460 
 
     }
 
@@ -1173,6 +1306,21 @@ public class MainActivity extends AppCompatActivity {
             return e.getMessage();
 
         }
+
+    }
+
+
+    static final class MyItem
+    {
+        final int id;
+
+        MyItem(int id)
+        {
+            this.id = id;
+            Log.i(TAG,"constructing MyItem "+ id);
+
+        }
+
 
     }
 
