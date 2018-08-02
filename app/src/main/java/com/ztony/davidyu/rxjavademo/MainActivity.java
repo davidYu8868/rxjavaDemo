@@ -1,54 +1,20 @@
 package com.ztony.davidyu.rxjavademo;
 
 import android.annotation.SuppressLint;
-import android.nfc.Tag;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Time;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.internal.operators.observable.ObservableLastMaybe;
-import io.reactivex.observables.ConnectableObservable;
-import io.reactivex.observables.GroupedObservable;
-import io.reactivex.observers.ResourceObserver;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.AsyncSubject;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.UnicastSubject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -1286,9 +1252,91 @@ public class MainActivity extends AppCompatActivity {
 //
 //                );
 
-       //460 
+       //460
+
+
+//        Observable<Integer> source = Observable.range(1,1000);
+//
+//        source.toFlowable(BackpressureStrategy.BUFFER)
+//                .observeOn(Schedulers.io())
+//                 .subscribe(i->Log.i(TAG,"item is "+ i));
+
+//        Flowable<Integer> integers = Flowable.range(1, 1000)
+//                .subscribeOn(Schedulers.computation());
+//
+//        Observable.just("Alpha","Beta","Gamma","Epsilon")
+//                .flatMap(s-> integers.map(i-> i + "-"+s).toObservable())
+//                .subscribe(p->Log.i(TAG,"item is "+ p ));
+
+
+//        Flowable.interval(1,TimeUnit.SECONDS)
+//                .onBackpressureBuffer(10,()->Log.i(TAG,"over flow!"), BackpressureOverflowStrategy.DROP_LATEST)
+//                .observeOn(Schedulers.io())
+//                .subscribe(i-> {
+//
+//                   sleep(5);
+//                   Log.i(TAG,"item is "+ i);
+//
+//                });
+
+
+//        randomGenerator(1,100000)
+//                .subscribeOn(Schedulers.computation())
+//                .doOnNext(i->Log.i(TAG,"emitting "+ i ))
+//                .observeOn(Schedulers.io())
+//                .subscribe(i->
+//                        {
+//                            sleep(50);
+//                            Log.i(TAG,"received "+ i);
+//
+//                        }
+//
+//                );
+
+
+//        rangeReverse(100,-100) .subscribeOn(Schedulers.computation())
+//                .doOnNext(i -> Log.i(TAG,"Emitting " + i)) .observeOn(Schedulers.io())
+//                .subscribe(i -> {
+//                    sleep(50);
+//                    Log.i(TAG,"Received " + i); });
+
+
+        //476
+
+
+
 
     }
+
+    static Flowable<Integer> rangeReverse(int upperBound,int lowerBound)
+    {
+        return Flowable.generate(()->new AtomicInteger(upperBound+1)
+        ,(state,emitter)->{
+                    int current = state.decrementAndGet();
+                    emitter.onNext(current);
+
+                    if(current == lowerBound)
+                    {
+                        emitter.onComplete();
+                    }
+
+                }
+
+        );
+
+
+
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    static Flowable<Object> randomGenerator(int min, int max)
+    {
+         return Flowable.generate(emitter -> {emitter.onNext(ThreadLocalRandom.current().nextInt(min, max));});
+    }
+
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private static int randomSleepTime() {
