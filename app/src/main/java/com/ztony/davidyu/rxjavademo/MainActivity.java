@@ -7,9 +7,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,10 +22,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
+import io.reactivex.ObservableOperator;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.Observer;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -1323,44 +1334,183 @@ public class MainActivity extends AppCompatActivity {
 //                .subscribe(i->Log.i(TAG,"item is "+ i));
 
 
-        Flowable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon") .compose(toImmutableList())
-                .subscribe(System.out::println);
-        Flowable.range(1,10) .compose(toImmutableList())
-                .subscribe(System.out::println);
+//        Flowable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon").compose(toImmutableList())
+//                .subscribe(System.out::println);
+//        Flowable.range(1, 10).compose(toImmutableList())
+//                .subscribe(System.out::println);
+
+
+//        Observable<IndexedValue<String>> indexedStrings = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .compose(withIndex());
+//
+//        indexedStrings.subscribe(v->Log.i(TAG,"subscriber 1: "+ v));
+//        indexedStrings.subscribe(v->Log.i(TAG,"subscriber 2: "+ v));
+
+
+//        Observable.range(1, 5)
+//                .lift(myToList())
+//                .subscribe(v -> Log.i(TAG, "item " + v));
+//
+//
+//        Observable.<Integer>empty()
+//                .lift(myToList())
+//                .subscribe(v -> Log.i(TAG, "item " + v));
+
+
+//        Observable.just("Alpha","Beta","Gamma","Delta","Epsilon")
+//                .toList()
+//                .compose(toUnmodifiable())
+//                .subscribe(v -> Log.i(TAG, "item " + v));
+
+
+        //510 testing and debugging
+        
+
 
     }
 
 
 
-    public static ObservableTransformer<String,String> joinToString(String separator)
+    public static <T>SingleTransformer<Collection<T>,Collection<T>> toUnmodifiable()
+    {
+       return singleObserver-> singleObserver.map(Collections::unmodifiableCollection);
+
+    }
+
+
+    public static<T> ObservableOperator<List<T>,T> myToList()
     {
 
-        return upstream -> upstream.collect(StringBuilder::new,(b,s)->{
+        return observer -> new DisposableObserver<T>() {
 
-            if(b.length() == 0 )
-            {
+            ArrayList<T> list = new ArrayList<>();
+
+
+            @Override
+            public void onNext(T value) {
+
+                //add to List, but don't pass anything downstream
+                list.add(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+                observer.onError(e);
+
+            }
+
+            @Override
+            public void onComplete() {
+
+                observer.onNext(list);
+                observer.onComplete();
+            }
+        };
+
+    }
+
+
+//    public static <T> ObservableOperator<T, T> doOnEmpty(Action action) {
+//        return observer -> new DisposableObserver<T>() {
+//            boolean isEmpty = true;
+//
+//            @Override
+//            public void onNext(T value) {
+//                isEmpty = false;
+//                observer.onNext(value);
+//            }
+//
+//            @Override
+//            public void onError(Throwable t) {
+//                observer.onError(t);
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//                if (isEmpty) {
+//                    try {
+//                        action.run();
+//                    } catch (Exception e) {
+//                        onError(e);
+//                        return;
+//                    }
+//                }
+//                observer.onComplete();
+//            }
+//        };
+//
+//
+//    }
+
+    public static <T> ObservableOperator<T, T> doOnEmpty(Action action) {
+                return observer->
+                    new DisposableObserver<T>() {
+                        boolean isEmpty = true;
+
+                        @Override
+                        public void onNext(T value) {
+                            isEmpty = false;
+                            observer.onNext(value);
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            observer.onError(t);
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            if (isEmpty) {
+                                try {
+                                    action.run();
+                                } catch (Exception e) {
+                                    onError(e);
+                                    return;
+                                }
+                            }
+                            observer.onComplete();
+                        }
+                    };
+    }
+
+
+    static <T> ObservableTransformer<T, IndexedValue<T>> withIndex() {
+
+
+        return upstream -> Observable.defer(() -> {
+
+            AtomicInteger indexer = new AtomicInteger(-1);
+            return upstream.map(v -> new IndexedValue<T>(indexer.incrementAndGet(), v));
+        });
+
+    }
+
+
+    public static ObservableTransformer<String, String> joinToString(String separator) {
+
+        return upstream -> upstream.collect(StringBuilder::new, (b, s) -> {
+
+            if (b.length() == 0) {
                 b.append(s);
-            }else
-            {
+            } else {
                 b.append(separator).append(s);
             }
 
 
         })
-                 .map(StringBuilder::toString)
+                .map(StringBuilder::toString)
                 .toObservable();
 
     }
 
-    public static <T> FlowableTransformer<T, ImmutableList<T>> toImmutableList()
-    {
+    public static <T> FlowableTransformer<T, ImmutableList<T>> toImmutableList() {
 
-                return upstream ->upstream.collect(ImmutableList::<T>builder,ImmutableList.Builder::add)
-                        .map(ImmutableList.Builder::build)
-                        .toFlowable();
+        return upstream -> upstream.collect(ImmutableList::<T>builder, ImmutableList.Builder::add)
+                .map(ImmutableList.Builder::build)
+                .toFlowable();
 
     }
-
 
 
 //    public static <T> ObservableTransformer<T, ImmutableList<T>> toImmutableList()
@@ -1496,4 +1646,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    static final class IndexedValue<T> {
+        final int index;
+        final T value;
+
+
+        IndexedValue(int index, T value) {
+            this.index = index;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return index + " - " + value;
+        }
+    }
+
+
 }
+
+
