@@ -7,12 +7,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.common.collect.ImmutableList;
+
 import java.net.URL;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Flowable;
+import io.reactivex.FlowableTransformer;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -28,8 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static int count = 5;
 
 
-    int numberOfThreads = 20 ;
-
+    int numberOfThreads = 20;
 
 
     @SuppressLint("CheckResult")
@@ -944,7 +949,6 @@ public class MainActivity extends AppCompatActivity {
 //        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
 
 
-
 //        Observable<Integer> lengths = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
 //                .subscribeOn(Schedulers.computation())
 //                .map(MainActivity::intenseCalculation)
@@ -957,7 +961,6 @@ public class MainActivity extends AppCompatActivity {
 //
 //
 //        lengths.subscribe(i->Log.i(TAG, "received "+ i +" on thread "+ Thread.currentThread().getName()));
-
 
 
 //        Observable.fromCallable(()->getResponse("https://api.github.com/users/thomasnield/starred"))
@@ -1112,7 +1115,6 @@ public class MainActivity extends AppCompatActivity {
 //        proccessStrings.subscribe(s->Log.i(TAG,s));
 
 
-
 //        Observable<String> items = Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
 //                "Zeta", "Eta", "Theta", "Iota");
 //
@@ -1252,7 +1254,7 @@ public class MainActivity extends AppCompatActivity {
 //
 //                );
 
-       //460
+        //460
 
 
 //        Observable<Integer> source = Observable.range(1,1000);
@@ -1303,20 +1305,88 @@ public class MainActivity extends AppCompatActivity {
 
         //476
 
+//        Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .compose(toImmutableList())
+////                .collect(ImmutableList::builder, ImmutableList.Builder::add)
+////                .map(ImmutableList.Builder::build)
+//                .subscribe(i -> Log.i(TAG, "item is " + i));
+//
+//        Observable.range(1, 15)
+//                .compose(toImmutableList())
+////                .collect(ImmutableList::builder, ImmutableList.Builder::add)
+////                .map(ImmutableList.Builder::build)
+//                .subscribe(i->Log.i(TAG, "item is "+ i));
 
 
+//        Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
+//                .compose(joinToString("/"))
+//                .subscribe(i->Log.i(TAG,"item is "+ i));
+
+
+        Flowable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon") .compose(toImmutableList())
+                .subscribe(System.out::println);
+        Flowable.range(1,10) .compose(toImmutableList())
+                .subscribe(System.out::println);
 
     }
 
-    static Flowable<Integer> rangeReverse(int upperBound,int lowerBound)
+
+
+    public static ObservableTransformer<String,String> joinToString(String separator)
     {
-        return Flowable.generate(()->new AtomicInteger(upperBound+1)
-        ,(state,emitter)->{
+
+        return upstream -> upstream.collect(StringBuilder::new,(b,s)->{
+
+            if(b.length() == 0 )
+            {
+                b.append(s);
+            }else
+            {
+                b.append(separator).append(s);
+            }
+
+
+        })
+                 .map(StringBuilder::toString)
+                .toObservable();
+
+    }
+
+    public static <T> FlowableTransformer<T, ImmutableList<T>> toImmutableList()
+    {
+
+                return upstream ->upstream.collect(ImmutableList::<T>builder,ImmutableList.Builder::add)
+                        .map(ImmutableList.Builder::build)
+                        .toFlowable();
+
+    }
+
+
+
+//    public static <T> ObservableTransformer<T, ImmutableList<T>> toImmutableList()
+//    {
+//
+//        return new ObservableTransformer<T, ImmutableList<T>>() {
+//
+//            @Override
+//            public ObservableSource<ImmutableList<T>> apply(Observable<T> upstream) {
+//
+//                return upstream.collect(ImmutableList::<T>builder,ImmutableList.Builder::add)
+//                        .map(ImmutableList.Builder::build)
+//                        .toObservable();
+//            }
+//        };
+//
+//    }
+
+
+    static Flowable<Integer> rangeReverse(int upperBound, int lowerBound) {
+        return Flowable.generate(() -> new AtomicInteger(upperBound + 1)
+                , (state, emitter) -> {
                     int current = state.decrementAndGet();
                     emitter.onNext(current);
 
-                    if(current == lowerBound)
-                    {
+                    if (current == lowerBound) {
                         emitter.onComplete();
                     }
 
@@ -1325,17 +1395,15 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-
     }
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    static Flowable<Object> randomGenerator(int min, int max)
-    {
-         return Flowable.generate(emitter -> {emitter.onNext(ThreadLocalRandom.current().nextInt(min, max));});
+    static Flowable<Object> randomGenerator(int min, int max) {
+        return Flowable.generate(emitter -> {
+            emitter.onNext(ThreadLocalRandom.current().nextInt(min, max));
+        });
     }
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -1344,10 +1412,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private static String getResponse(String path)
-    {
+    private static String getResponse(String path) {
         try {
-           return new Scanner(new URL(path).openStream(),"UTF-8").useDelimiter("\\A").next();
+            return new Scanner(new URL(path).openStream(), "UTF-8").useDelimiter("\\A").next();
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -1358,14 +1425,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    static final class MyItem
-    {
+    static final class MyItem {
         final int id;
 
-        MyItem(int id)
-        {
+        MyItem(int id) {
             this.id = id;
-            Log.i(TAG,"constructing MyItem "+ id);
+            Log.i(TAG, "constructing MyItem " + id);
 
         }
 
