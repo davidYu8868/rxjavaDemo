@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Flowable;
@@ -1364,8 +1365,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         //510 testing and debugging
-        
 
+
+
+        Observable.interval(1, TimeUnit.SECONDS)
+                .take(5) .subscribe(System.out::println);
+        sleep(5000);
 
     }
 
