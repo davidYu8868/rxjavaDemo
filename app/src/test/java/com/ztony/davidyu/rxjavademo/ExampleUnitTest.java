@@ -42,7 +42,7 @@ public class ExampleUnitTest {
     public void testBlockingSubscribe() throws Exception {
 
         AtomicInteger hitCount = new AtomicInteger();
-        Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS) .take(5);
+        Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS).take(5);
         source.blockingSubscribe(i -> hitCount.incrementAndGet());
 
         assertTrue(hitCount.get() == 5);
@@ -50,8 +50,7 @@ public class ExampleUnitTest {
 
 
     @Test
-    public void testFirst() throws Exception
-    {
+    public void testFirst() throws Exception {
 
         Observable<String> source =
                 Observable.just("Alpha", "Beta", "Gamma", "Delta", "Zeta");
@@ -65,20 +64,18 @@ public class ExampleUnitTest {
     }
 
 
-
     @Test
     public void testSingle() {
         Observable<String> source =
                 Observable.just("Alpha", "Beta", "Gamma", "Delta", "Zeta");
-        List<String> allWithLengthFour = source.filter(s -> s.length() == 4) .toList()
+        List<String> allWithLengthFour = source.filter(s -> s.length() == 4).toList()
                 .blockingGet();
-        assertTrue(allWithLengthFour.equals(Arrays.asList("Beta","Zeta"))); }
-
+        assertTrue(allWithLengthFour.equals(Arrays.asList("Beta", "Zeta")));
+    }
 
 
     @Test
-    public void testLast()
-    {
+    public void testLast() {
         Observable<String> source =
                 Observable.just("Alpha", "Beta", "Gamma", "Delta", "Zeta");
 
@@ -107,32 +104,29 @@ public class ExampleUnitTest {
 
 
     @Test
-    public void testBlockingForEach()
-    {
+    public void testBlockingForEach() {
 
         Observable<String> source =
                 Observable.just("Alpha", "Beta", "Gamma", "Delta", "Zeta");
 
-        source.filter(s->s.length() == 5)
-                .blockingForEach(s-> assertTrue(s.length() == 5));
+        source.filter(s -> s.length() == 5)
+                .blockingForEach(s -> assertTrue(s.length() == 5));
 
 
     }
 
 
     @Test
-    public void testBlockingNext()
-    {
+    public void testBlockingNext() {
 
         Observable<Long> source =
-                Observable.interval(1, TimeUnit.MICROSECONDS) .take(1000);
+                Observable.interval(1, TimeUnit.MICROSECONDS).take(1000);
 
 
         Iterable<Long> iterable = source.blockingNext();
 
 
-        for(Long i : iterable)
-        {
+        for (Long i : iterable) {
 
             System.out.println(i);
         }
@@ -142,31 +136,34 @@ public class ExampleUnitTest {
 
 
     @Test
-    public void testBlockingLatest() { Observable<Long> source =
-            Observable.interval(1, TimeUnit.MICROSECONDS) .take(1000);
+    public void testBlockingLatest() {
+        Observable<Long> source =
+                Observable.interval(1, TimeUnit.MICROSECONDS).take(1000);
         Iterable<Long> iterable = source.blockingLatest();
-        for (Long i: iterable) { System.out.println(i); }
+        for (Long i : iterable) {
+            System.out.println(i);
+        }
     }
 
     @Test
-    public void testBlockingMostRecent()
-    {
-        Observable<Long> source = Observable.interval(10, TimeUnit.MILLISECONDS) .take(5);
+    public void testBlockingMostRecent() {
+        Observable<Long> source = Observable.interval(10, TimeUnit.MILLISECONDS).take(5);
 
         Iterable<Long> iterable = source.blockingMostRecent(-1L);
 
-        for (Long i: iterable) { System.out.println(i); }
+        for (Long i : iterable) {
+            System.out.println(i);
+        }
     }
 
     //536
 
 
     @Test
-    public void usingTestObserver()
-    {
+    public void usingTestObserver() {
 
         //An Observable with 5 one-second emissions
-        Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS) .take(5);
+        Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS).take(5);
 
 
         //Declare TestObserver
@@ -176,10 +173,10 @@ public class ExampleUnitTest {
         //Assert no subscription has occurred yet
         testObserver.assertNotSubscribed();
 
-     //Subscribe TestObserver to source
+        //Subscribe TestObserver to source
         source.subscribe(testObserver);
 
-     //Assert TestObserver is subscribed
+        //Assert TestObserver is subscribed
         testObserver.assertSubscribed();
 
 
@@ -191,7 +188,7 @@ public class ExampleUnitTest {
         testObserver.assertComplete();
 
 
-       //Assert there were no errors
+        //Assert there were no errors
         testObserver.assertNoErrors();
 
 
@@ -204,15 +201,11 @@ public class ExampleUnitTest {
         testObserver.assertValues(0L, 1L, 2L, 3L, 4L);
 
 
-
-
-
     }
 
 
     @Test
-    public void usingTestScheduler()
-    {
+    public void usingTestScheduler() {
 
         //Declare TestScheduler
         TestScheduler testScheduler = new TestScheduler();
@@ -229,7 +222,7 @@ public class ExampleUnitTest {
 
 
         //fast forward by 30 seconds
-        testScheduler.advanceTimeBy(30,TimeUnit.SECONDS);
+        testScheduler.advanceTimeBy(30, TimeUnit.SECONDS);
 
 
         //Assert no emissions have occurred yet
@@ -248,6 +241,57 @@ public class ExampleUnitTest {
 
         //Assert 90 emissions have occurred
         testObserver.assertValueCount(90);
+
+    }
+
+
+    @Test
+    public void debugWalkthrough() {
+
+        //Declare TestObserver
+        TestObserver<String> testObserver = new TestObserver<>();
+
+        //Source pushing three strings
+        Observable<String> items = Observable.just("521934/2342/Foxtrot",
+                "Bravo/12112/78886/Tango", "283242/4542/Whiskey/2348562");
+
+
+        //Split and concatMap() on "/"
+//        items.concatMap(s-> Observable.fromArray(s.split("/")))
+//                .filter(s->s.matches("[A-Z]+"))
+//
+//                //Subscribe the TestObserver
+//                .subscribe(testObserver);
+
+
+//        items.doOnNext(s->System.out.println("Source push "+s))
+//                .concatMap(s->Observable.fromArray(s.split("/")));
+
+        //Split and concatMap() on "/"
+//        items.doOnNext(s -> System.out.println("Source pushed: " + s)) .concatMap(s ->
+//                Observable.fromArray(s.split("/"))
+//        );
+
+        //Split and concatMap() on "/"
+//        items.concatMap(s -> Observable.fromArray(s.split("/"))
+//        )
+//                .doOnNext(s -> System.out.println("concatMap() pushed: " + s));
+
+        //Split and concatMap() on "/"
+        items.concatMap(s -> Observable.fromArray(s.split("/"))
+        )
+//filter for only alphabetic Strings using regex
+                .filter(s -> s.matches("[A-Za-z]+"))
+//Subscribe the TestObserver
+                .subscribe(testObserver);
+
+
+        //Why are no values being emitted?
+        System.out.println(testObserver.values());
+
+        //This fails due to no values
+        testObserver.assertValues("Foxtrot", "Bravo", "Tango", "Whiskey");
+
 
     }
 
